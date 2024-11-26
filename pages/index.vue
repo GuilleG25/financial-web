@@ -356,6 +356,7 @@
 
 <script setup>
 import { ref, computed } from 'vue'
+const { logout } = useSanctumAuth()
 import { Form, Field, ErrorMessage } from 'vee-validate'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import moment from 'moment'
