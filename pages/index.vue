@@ -167,9 +167,14 @@
               >
                 <div class="flex items-center text-sm text-gray-700">
                   Mostrando
-                  <span class="font-medium mx-1">{{
-                    (currentPageNumber - 1) * itemsPerPage + 1
-                  }}</span>
+                  <span class="font-medium mx-1">
+                    {{
+                      movements.length > 0
+                        ? (currentPageNumber - 1) * itemsPerPage + 1
+                        : 0
+                    }}
+                  </span>
+
                   a
                   <span class="font-medium mx-1">{{
                     movements.length > 0
