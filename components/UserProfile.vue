@@ -23,7 +23,7 @@
           <span>{{ user.email }}</span>
         </span>
 
-        <p class="text-gray-700">Capital Actual: ${{ balance.toFixed(2) }}</p>
+        <p class="text-gray-700">Capital Actual: €{{ balance.toFixed(2) }}</p>
       </div>
     </div>
   </div>
