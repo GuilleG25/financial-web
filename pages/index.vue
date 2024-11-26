@@ -118,7 +118,7 @@
                           <td
                             class="whitespace-nowrap px-3 py-4 text-sm text-gray-500"
                           >
-                            ${{ movement.amount.toFixed(2) }}
+                            €{{ movement.amount.toFixed(2) }}
                           </td>
                           <td
                             class="whitespace-nowrap px-3 py-4 text-sm text-gray-500"
