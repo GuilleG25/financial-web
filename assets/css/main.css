@@ -1,0 +1,12 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+@tailwind variants;
+
+div:has(> span[role='alert']) input {
+  border: 2px solid red;
+  background-color: #ffe6e6;
+  padding: 0.5rem;
+  border-radius: 4px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
