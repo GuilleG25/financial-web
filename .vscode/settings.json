@@ -9,6 +9,5 @@
   },
   "[vue]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
-    // "editor.defaultFormatter": "cweijan.vetur-plus"
   }
 }

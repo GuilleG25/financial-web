@@ -24,31 +24,32 @@
     </nav>
 
     <!-- Dashboard -->
+
     <div class="py-10">
       <main>
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
           <!-- User Profile -->
           <UserProfile :balance="currentBalance" />
 
-          <!-- Transactions Table -->
+          <!-- Movements Table -->
           <div class="px-4 sm:px-6 lg:px-8">
             <div class="sm:flex sm:items-center">
               <div class="sm:flex-auto">
                 <h1 class="text-xl font-semibold text-gray-900">
-                  Transactions
+                  Mis movimientos
                 </h1>
                 <p class="mt-2 text-sm text-gray-700">
-                  A list of all financial transactions including expenses and
-                  income.
+                  Una lista de todos los movimientos financieras, incluidos los
+                  gastos y los ingresos.
                 </p>
               </div>
               <div class="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
                 <button
-                  @click="openModal"
+                  @click="toggleModal"
                   type="button"
                   class="inline-flex items-center justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:w-auto"
                 >
-                  Add transaction
+                  Agregar movimiento
                 </button>
               </div>
             </div>
@@ -67,81 +68,87 @@
                             scope="col"
                             class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6"
                           >
-                            Date
+                            Fecha
                           </th>
                           <th
                             scope="col"
                             class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
                           >
-                            Description
+                            Descripción
                           </th>
                           <th
                             scope="col"
                             class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
                           >
-                            Amount
+                            Monto
                           </th>
                           <th
                             scope="col"
                             class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
                           >
-                            Type
+                            Tipo
                           </th>
                           <th
                             scope="col"
                             class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
                           >
-                            Actions
+                            Acciones
                           </th>
                         </tr>
                       </thead>
                       <tbody class="divide-y divide-gray-200 bg-white">
                         <tr
-                          v-for="transaction in paginatedTransactions"
-                          :key="transaction.id"
+                          v-for="movement in paginatedMovements"
+                          :key="movement.id"
                         >
                           <td
                             class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6"
                           >
-                            {{ transaction.date }}
+                            {{
+                              moment(movement.date).format(
+                                'YYYY-MM-DD HH:mm:ss'
+                              )
+                            }}
                           </td>
                           <td
                             class="whitespace-nowrap px-3 py-4 text-sm text-gray-500"
                           >
-                            {{ transaction.description }}
+                            {{ movement.description }}
                           </td>
                           <td
                             class="whitespace-nowrap px-3 py-4 text-sm text-gray-500"
                           >
-                            ${{ transaction.amount.toFixed(2) }}
+                            ${{ movement.amount.toFixed(2) }}
                           </td>
                           <td
                             class="whitespace-nowrap px-3 py-4 text-sm text-gray-500"
                           >
                             <span
                               :class="
-                                transaction.type === 'income'
+                                movement.type === 'income'
                                   ? 'text-green-600'
                                   : 'text-red-600'
                               "
                             >
-                              {{ transaction.type }}
+                              {{
+                                movement.type === 'income' ? 'Ingreso' : 'Gasto'
+                              }}
                             </span>
                           </td>
                           <td
                             class="whitespace-nowrap px-3 py-4 text-sm text-gray-500"
                           >
                             <button
-                              @click="editTransaction(transaction)"
+                              @click="editMovement(movement)"
                               class="text-indigo-600 hover:text-indigo-900 mr-2"
                             >
-                              Edit
+                              Editar
                             </button>
                             <button
-                              @click="deleteTransaction(transaction.id)"
+                              @click="deleteMovement(movement._id)"
                               class="text-red-600 hover:text-red-900"
                             >
-                              Delete
+                              Eliminar
                             </button>
                           </td>
                         </tr>
@@ -159,26 +166,26 @@
                 class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between"
               >
                 <div class="flex items-center text-sm text-gray-700">
-                  Showing
+                  Mostrando
                   <span class="font-medium mx-1">{{
                     (currentPageNumber - 1) * itemsPerPage + 1
                   }}</span>
-                  to
+                  a
                   <span class="font-medium mx-1">{{
-                    transactions.length > 0
+                    movements.length > 0
                       ? Math.min(
                           currentPageNumber * itemsPerPage,
-                          transactions.length
+                          movements.length
                         )
                       : 0
                   }}</span>
-                  of
-                  <div v-if="transactions.length > 0">
+                  de
+                  <div v-if="movements.length > 0">
                     <span class="font-medium mx-1">
-                      {{ transactions.length }}
+                      {{ movements.length }}
                     </span>
                   </div>
-                  results
+                  resultados
                 </div>
                 <div>
                   <nav
@@ -245,232 +252,167 @@
       </main>
     </div>
 
-    <!-- Add/Edit Transaction Modal -->
+    <!-- Add/Edit Movement Modal -->
     <dialog
-      ref="modal"
-      class="rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg w-full sm:p-6"
-      @close="closeModal"
+      ref="modalMovement"
+      class="rounded-lg bg-white shadow-xl overflow-hidden sm:max-w-lg w-full p-6 transform transition-all sm:my-8 sm:align-middle"
+      aria-labelledby="modal-title"
+      aria-modal="true"
     >
-      <div class="mt-3 text-center sm:mt-5">
-        <h3
-          class="text-lg leading-6 font-medium text-gray-900"
-          id="modal-title"
-        >
-          {{ editingTransaction ? 'Edit Transaction' : 'Add New Transaction' }}
-        </h3>
-        <div class="mt-2">
-          <form
-            @submit.prevent="
-              editingTransaction ? updateTransaction() : addTransaction()
-            "
+      <h3
+        id="modal-title"
+        class="text-center text-lg font-medium text-gray-900 mb-4"
+      >
+        {{ idMovement ? 'Editar' : 'Añadir' }} Movimiento
+      </h3>
+      <Form @submit="handleSubmit" class="space-y-6">
+        <div class="flex justify-center mb-4">
+          <button
+            type="button"
+            @click="selectType('income')"
+            :class="{
+              'bg-green-200': movementType === 'income',
+              'bg-white': movementType !== 'income',
+            }"
+            class="mr-2 px-4 py-2 rounded-md border border-gray-300 text-gray-700"
           >
-            <div class="mb-4">
-              <label
-                for="description"
-                class="block text-sm font-medium text-gray-700"
-                >Description</label
-              >
-              <input
-                type="text"
-                name="description"
-                id="description"
-                v-model="newTransaction.description"
-                required
-                class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
-              />
-            </div>
-            <div class="mb-4">
-              <label
-                for="amount"
-                class="block text-sm font-medium text-gray-700"
-                >Amount</label
-              >
-              <input
-                type="number"
-                name="amount"
-                id="amount"
-                v-model="newTransaction.amount"
-                required
-                class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
-              />
-            </div>
-            <div class="mb-4">
-              <label for="type" class="block text-sm font-medium text-gray-700"
-                >Type</label
-              >
-              <select
-                id="type"
-                name="type"
-                v-model="newTransaction.type"
-                required
-                class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-              >
-                <option value="income">Income</option>
-                <option value="expense">Expense</option>
-              </select>
-            </div>
-            <div
-              class="mt-5 sm:mt-6 sm:grid sm:grid-cols-2 sm:gap-3 sm:grid-flow-row-dense"
-            >
-              <button
-                type="submit"
-                class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:col-start-2 sm:text-sm"
-              >
-                {{ editingTransaction ? 'Update' : 'Add' }}
-              </button>
-              <button
-                @click="closeModal"
-                type="button"
-                class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:col-start-1 sm:text-sm"
-              >
-                Cancel
-              </button>
-            </div>
-          </form>
+            Ingreso
+          </button>
+          <button
+            type="button"
+            @click="selectType('expense')"
+            :class="{
+              'bg-red-200': movementType === 'expense',
+              'bg-white': movementType !== 'expense',
+            }"
+            class="px-4 py-2 rounded-md border border-gray-300 text-gray-700"
+          >
+            Egreso
+          </button>
+          <ErrorMessage name="type" class="mt-2 text-sm text-red-600" />
         </div>
-      </div>
+        <div>
+          <label
+            for="amount"
+            class="block text-sm font-medium text-gray-700 mb-1"
+          >
+            Valor del movimiento
+          </label>
+          <Field
+            type="number"
+            name="amount"
+            v-model="movementAmount"
+            required
+            class="appearance-none rounded-md block w-full px-3 py-2 border border-gray-300 placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            placeholder="Ingresa el valor del movimiento"
+            :rules="movementAmountRules"
+          />
+          <ErrorMessage name="amount" class="text-red-500 text-sm mt-1 block" />
+        </div>
+        <div>
+          <label
+            for="description"
+            class="block text-sm font-medium text-gray-700 mb-1"
+          >
+            Descripción
+          </label>
+          <Field
+            type="text"
+            name="description"
+            v-model="movementDescription"
+            class="appearance-none rounded-md block w-full px-3 py-2 border border-gray-300 placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            placeholder="Ingresa una descripción"
+            :rules="movementDescriptionRules"
+          />
+          <ErrorMessage
+            name="description"
+            class="text-red-500 text-sm mt-1 block"
+          />
+        </div>
+        <div class="flex space-x-4">
+          <button
+            type="submit"
+            class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:text-sm font-medium"
+          >
+            {{ idMovement ? 'Actualizar' : 'Crear' }} Movimiento
+          </button>
+          <button
+            type="button"
+            @click="toggleModal"
+            class="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:text-sm font-medium"
+          >
+            Cancelar
+          </button>
+        </div>
+      </Form>
     </dialog>
   </div>
 </template>
 
 <script setup>
 import { ref, computed } from 'vue'
-const { user, logout } = useSanctumAuth()
-const token = useCookie('sanctum.token.cookie')
+import { Form, Field, ErrorMessage } from 'vee-validate'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import moment from 'moment'
 
-const modal = ref(null)
-const newTransaction = ref({
-  description: '',
-  amount: 0,
-  type: 'expense',
-})
-const editingTransaction = ref(null)
-
+const idMovement = ref(null)
 const itemsPerPage = 5
 const currentPageNumber = ref(1)
 
-const transactions = ref([
-  {
-    id: 1,
-    date: '2023-06-01',
-    description: 'Salary',
-    amount: 5000,
-    type: 'income',
-  },
-  {
-    id: 2,
-    date: '2023-06-02',
-    description: 'Rent',
-    amount: 1500,
-    type: 'expense',
-  },
-  {
-    id: 3,
-    date: '2023-06-03',
-    description: 'Groceries',
-    amount: 200,
-    type: 'expense',
-  },
-  {
-    id: 4,
-    date: '2023-06-04',
-    description: 'Freelance work',
-    amount: 1000,
-    type: 'income',
-  },
-  {
-    id: 5,
-    date: '2023-06-05',
-    description: 'Utilities',
-    amount: 150,
-    type: 'expense',
-  },
-  {
-    id: 6,
-    date: '2023-06-06',
-    description: 'Online course',
-    amount: 50,
-    type: 'expense',
-  },
-  {
-    id: 7,
-    date: '2023-06-07',
-    description: 'Dividend',
-    amount: 200,
-    type: 'income',
-  },
+const modalMovement = ref(null)
+const movementType = ref('income')
+const movementAmount = ref(0)
+const movementDescription = ref('')
+
+const movementAmountRules = ref([(v) => !!v || 'El monto es obligatorio'])
+const movementDescriptionRules = ref([
+  (v) => !!v || 'La descripción es obligatoria',
 ])
 
+const movements = ref([])
+
 onMounted(() => {
-  console.log(user.value)
-  console.log(token.value)
+  allMovements()
 })
 
 const currentBalance = computed(() => {
-  return transactions.value.reduce((total, transaction) => {
-    return transaction.type === 'income'
-      ? total + transaction.amount
-      : total - transaction.amount
+  return movements.value.reduce((total, movement) => {
+    return movement.type === 'income'
+      ? total + movement.amount
+      : total - movement.amount
   }, 0)
 })
 
 const totalPages = computed(() =>
-  Math.ceil(transactions.value.length / itemsPerPage)
+  Math.ceil(movements.value.length / itemsPerPage)
 )
 
-const paginatedTransactions = computed(() => {
+const paginatedMovements = computed(() => {
   const start = (currentPageNumber.value - 1) * itemsPerPage
   const end = start + itemsPerPage
-  return transactions.value.slice(start, end)
+  return movements.value.slice(start, end)
 })
 
 const logoutUser = () => {
   logout()
 }
 
-const openModal = () => {
-  modal.value.showModal()
-}
-
-const closeModal = () => {
-  modal.value.close()
-  newTransaction.value = { description: '', amount: 0, type: 'expense' }
-  editingTransaction.value = null
-}
-
-const addTransaction = () => {
-  const transaction = {
-    id: transactions.value.length + 1,
-    date: new Date().toISOString().split('T')[0],
-    ...newTransaction.value,
-    amount: parseFloat(newTransaction.value.amount),
+const toggleModal = () => {
+  if (modalMovement.value.open) {
+    resetForm()
+    modalMovement.value.close()
+    idMovement.value = null
+  } else {
+    modalMovement.value.showModal()
   }
-  transactions.value.push(transaction)
-  closeModal()
 }
 
-const editTransaction = (transaction) => {
-  editingTransaction.value = transaction
-  newTransaction.value = { ...transaction }
-  openModal()
-}
-
-const updateTransaction = () => {
-  const index = transactions.value.findIndex(
-    (t) => t.id === editingTransaction.value.id
-  )
-  if (index !== -1) {
-    transactions.value[index] = {
-      ...editingTransaction.value,
-      ...newTransaction.value,
-      amount: parseFloat(newTransaction.value.amount),
-    }
-  }
-  closeModal()
-}
-
-const deleteTransaction = (id) => {
-  transactions.value = transactions.value.filter((t) => t.id !== id)
+const editMovement = (movement) => {
+  idMovement.value = movement._id
+  movementType.value = movement.type
+  movementAmount.value = movement.amount
+  movementDescription.value = movement.description
+  toggleModal()
 }
 
 const changePage = (action, page) => {
@@ -481,5 +423,129 @@ const changePage = (action, page) => {
   } else if (action === 'goTo' && page !== null) {
     currentPageNumber.value = page
   }
+}
+
+const selectType = (type) => {
+  movementType.value = type
+}
+
+const resetForm = () => {
+  movementType.value = 'income'
+  movementAmount.value = 0
+  movementDescription.value = ''
+}
+
+const allMovements = () => {
+  try {
+    const api = useAxios()
+    api.get('/movements').then((response) => {
+      movements.value = response.data
+    })
+  } catch (error) {
+    console.log(error)
+  }
+}
+
+const handleSubmit = async () => {
+  if (idMovement.value) {
+    updateMovement()
+  } else {
+    addMovement()
+  }
+}
+
+const addMovement = () => {
+  try {
+    const api = useAxios()
+    api
+      .post('/movements', {
+        description: movementDescription.value,
+        amount: parseFloat(movementAmount.value),
+        type: movementType.value,
+      })
+      .then((response) => {
+        ElNotification({
+          title: '¡Exito!',
+          message: 'El movimiento ha sido creado.',
+          type: 'success',
+        })
+        movements.value.push(response.data)
+      })
+  } catch (error) {
+    console.log(error)
+    ElNotification({
+      title: 'error',
+      message: 'Error al crear el movimiento',
+      type: 'error',
+    })
+  } finally {
+    resetForm()
+    toggleModal()
+  }
+}
+
+const updateMovement = () => {
+  try {
+    const api = useAxios()
+    api
+      .put(`/movements/${idMovement.value}`, {
+        description: movementDescription.value,
+        amount: parseFloat(movementAmount.value),
+        type: movementType.value,
+      })
+      .then((response) => {
+        ElNotification({
+          title: '¡Exito!',
+          message: 'El movimiento ha sido actualizado.',
+          type: 'success',
+        })
+        allMovements()
+      })
+  } catch (error) {
+    console.log(error)
+    ElNotification({
+      title: 'error',
+      message: 'Error al actualizar el movimiento',
+      type: 'error',
+    })
+  } finally {
+    resetForm()
+    toggleModal()
+  }
+}
+
+const deleteMovement = (id) => {
+  ElMessageBox.confirm(
+    '¿Estás seguro de que quieres eliminar este movimiento?',
+    {
+      confirmButtonText: 'OK',
+      cancelButtonText: 'Cancelar',
+      type: 'warning',
+      center: true,
+    }
+  )
+    .then(() => {
+      try {
+        const api = useAxios()
+        api.delete(`/movements/${id}`).then(() => {
+          ElMessage({
+            type: 'success',
+            message: 'Movimiento eliminado exitosamente',
+          })
+          allMovements()
+        })
+      } catch (error) {
+        ElMessage({
+          type: 'info',
+          mssage: 'No se pudo eliminar el movimiento',
+        })
+      }
+    })
+    .catch(() => {
+      ElMessage({
+        type: 'info',
+        message: 'Movimiento no eliminado',
+      })
+    })
 }
 </script>

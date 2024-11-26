@@ -96,7 +96,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 import { ElNotification } from 'element-plus'
 import { Form, Field, ErrorMessage } from 'vee-validate'
 const { user } = useSanctumAuth()
@@ -106,7 +106,6 @@ const props = defineProps({
   balance: Number,
 })
 
-const email = computed(() => user.value?.email || 'No definido')
 const username = ref(user.value?.username || 'No definido')
 const newAvatar = ref(null)
 
