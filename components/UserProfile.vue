@@ -8,6 +8,7 @@
           class="w-24 h-24 rounded-full object-cover"
         />
         <button
+          aria-label="Cerrar"
           @click="toggleEditModal"
           class="absolute bottom-0 right-0 bg-indigo-600 text-white rounded-full p-2 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
         >

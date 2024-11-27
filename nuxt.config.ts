@@ -20,6 +20,9 @@ export default defineNuxtConfig({
         },
       ],
       link: [{ rel: 'icon', type: 'image/x-icon', href: '/favicon.png' }],
+      htmlAttrs: {
+        lang: 'es',
+      },
     },
   },
   modules: ['nuxt-auth-sanctum', '@element-plus/nuxt'],
