@@ -56,4 +56,11 @@ export default defineNuxtConfig({
       logoUrl: '/logo.png',
     },
   },
+  nitro: {
+    vercel: {
+      functions: {
+        maxDuration: 60,
+      },
+    },
+  },
 })
